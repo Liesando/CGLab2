@@ -14,9 +14,9 @@ public class Math3DHelper {
 
     public static Matrix4d projectionMatrix(double focalDistance) {
         return new Matrix4d(
-                1, 0, 0, 0,
-                0, 1, 0, 0,
-                0, 0, 1, 0,
-                0, 0, focalDistance, 0);
+                focalDistance, 0, 0, 0,
+                0, focalDistance, 0, 0,
+                0, 0, focalDistance, 0,
+                0, 0, 1, 0);
     }
 }

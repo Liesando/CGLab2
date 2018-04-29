@@ -6,6 +6,11 @@ import javax.vecmath.Vector3d;
 public class Matrix4dBuilder {
     private Matrix4d matrix;
 
+    public Matrix4dBuilder take(Matrix4d matrix) {
+        this.matrix = new Matrix4d(matrix);
+        return this;
+    }
+
     public Matrix4dBuilder identity() {
         matrix = Math3DHelper.identityMatrix();
         return this;
@@ -28,7 +33,7 @@ public class Matrix4dBuilder {
 
     public Matrix4dBuilder translate(double x, double y, double z) {
         Matrix4d translation = new Matrix4d();
-        translation.set(new Vector3d(x, y, z));
+        translation.set(new Vector3d(-x, -y, -z));
 
         matrix.mul(translation, matrix);
 

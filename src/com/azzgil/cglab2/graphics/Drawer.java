@@ -72,4 +72,9 @@ public class Drawer {
     public double getCanvasWidth() {
         return canvasWidth;
     }
+
+    public void drawLine(double x1, double y1, double x2, double y2, Color color) {
+        graphicsContext.setStroke(color);
+        graphicsContext.strokeLine(x1, y1, x2, y2);
+    }
 }
