@@ -8,9 +8,14 @@ public class MainController {
 
     private Main mainApp;
     private double delta = 3f;
-    @FXML private TextField zPlaneTf;
-    @FXML private TextField xPlaneTf;
-    @FXML private CheckBox drawNormalsCb;
+    @FXML
+    private TextField zPlaneTf;
+    @FXML
+    private TextField xPlaneTf;
+    @FXML
+    private TextField lightsTf;
+    @FXML
+    private CheckBox drawNormalsCb;
 
     @FXML
     private void onLeftClick() {
@@ -51,8 +56,12 @@ public class MainController {
 
             mainApp.setDrawNormals(drawNormalsCb.isSelected());
 
+            parsed = lightsTf.getText().trim().split(" ");
+            mainApp.setLightsRangeAndPower(Double.parseDouble(parsed[0]), Double.parseDouble(parsed[1]));
+
             mainApp.redraw();
-        } catch (NumberFormatException | IndexOutOfBoundsException e) { }
+        } catch (NumberFormatException | IndexOutOfBoundsException e) {
+        }
     }
 
     public void setMainApp(Main mainApp) {

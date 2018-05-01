@@ -1,5 +1,6 @@
 package com.azzgil.cglab2.graphics;
 
+import com.azzgil.cglab2.graphics.lighting.PointLight;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
@@ -15,6 +16,7 @@ public class Context3D {
     private Drawer drawer;
     private Matrix4d pvw; // P*V*W
     private Tuple2d screenCenter;
+    private List<PointLight> lights;
 
     public Context3D(double canvasWidth, double canvasHeight, Pane root) {
         drawer = new Drawer(canvasWidth, canvasHeight, root);
@@ -24,17 +26,34 @@ public class Context3D {
         world = Math3DHelper.identityMatrix();
         view = new Matrix4dBuilder()
                 .identity()
-                .translate(0, 0, -1)
+                .translate(0, 0, -20)
                 .build();
-        projection = Math3DHelper.projectionMatrix(10);
+        projection = Math3DHelper.projectionMatrix(canvasWidth, canvasHeight, 1, 100);
 
         computePVW();
+        setupLights(15, 0.4);
     }
 
     private void computePVW() {
         pvw = new Matrix4d();
         pvw.mul(view, world);
         pvw.mul(projection, pvw);
+    }
+
+    public void setupLights(double range, double power) {
+        double offset = 10.0;
+        double y = 5.0;
+
+        PointLight light1 = new PointLight(new Point4d(0, y, 0, 1), range, power, Color.WHITE);
+        PointLight light2 = new PointLight(new Point4d(0, y, offset, 1), range, power, Color.RED);
+        PointLight light3 = new PointLight(new Point4d(offset, y, 0, 1), range, power, Color.BLUE);
+        PointLight light4 = new PointLight(new Point4d(offset, y, offset, 1), range, power, Color.GREEN);
+
+        lights = new ArrayList<>();
+        lights.add(light1);
+        lights.add(light2);
+        lights.add(light3);
+        lights.add(light4);
     }
 
     public Tuple2d transformPoint(Tuple4d point) {
@@ -105,10 +124,8 @@ public class Context3D {
                              double zStart, double zEnd, double zStep,
                              double xStart, double xEnd, double xStep,
                              Color color, boolean drawNormals) {
-        Vector4d toLight = new Vector4d(0, 1, 0, 0);
-        Color lightColor = Color.WHITE;
         double z = zStart;
-        while (z <= zEnd) {
+        while (z < zEnd) {
             double x = xStart;
             while (x <= xEnd) {
 
@@ -121,11 +138,9 @@ public class Context3D {
                 double nextX;
 
                 if (z + zStep > zEnd) {
-                    nextZ = z - zStep;
                     reverseCross = true;
-                } else {
-                    nextZ = z + zStep;
                 }
+                nextZ = Math.min(z + zStep, zEnd);
                 Vector4d nextZPlane = new Vector4d(x, f.applyAsDouble(x, nextZ), nextZ, 1);
 
                 if (x + xStep > xEnd) {
@@ -168,13 +183,24 @@ public class Context3D {
                 }
 
                 // draw 1st filled triangle
+                Color lightColor = Color.BLACK;
+                Vector4d center = getTriangleCenter(point, nextXPlane, nextZPlane);
+                for (PointLight pl : lights) {
+                    lightColor = CommonHelper.add(lightColor,
+                            pl.getColorForPoint(center, firstCross));
+                }
                 Color resultColor = CommonHelper.mul(color, lightColor);
-                resultColor = CommonHelper.mul(resultColor, CommonHelper.dot(firstCross, toLight));
+//                resultColor = CommonHelper.mul(resultColor, CommonHelper.dot(firstCross, toLight));
                 drawer.fillPolygon(firstTriangle, resultColor);
 
                 // draw 2d filled triangle
+                lightColor = Color.BLACK;
+                center = getTriangleCenter(nextXPlane, nextZPlane, nextZXPlane);
+                for (PointLight pl : lights) {
+                    lightColor = CommonHelper.add(lightColor,
+                            pl.getColorForPoint(center, secondCross));
+                }
                 resultColor = CommonHelper.mul(color, lightColor);
-                resultColor = CommonHelper.mul(resultColor, CommonHelper.dot(secondCross, toLight));
                 drawer.fillPolygon(secondTriangle, resultColor);
 
                 // draw normal
@@ -188,5 +214,13 @@ public class Context3D {
             }
             z += zStep;
         }
+    }
+
+    private Vector4d getTriangleCenter(Tuple4d v1, Tuple4d v2, Tuple4d v3) {
+        Vector4d result = new Vector4d(v1);
+        result.add(v2);
+        result.add(v3);
+        result.scale(1.0 / 3);
+        return result;
     }
 }

@@ -67,10 +67,14 @@ public class Main extends Application {
         context3D.drawFunction((x,z) -> Math.sin(x),
                 zStart, zEnd, zStep, xStart, xEnd, xStep, Color.WHITE, drawNormals);
 
+        Point4d testX = new Point4d(1, 0, 0, 1);
+        Point4d testY = new Point4d(0, 1, 0, 1);
+        Point4d testZ = new Point4d(0, 0, 1, 1);
+
 //        context3D.drawPoint(context3D.transformPoint(center), 3, Color.WHITE);
-//        context3D.drawPoint(context3D.transformPoint(x), 3, Color.RED);
-//        context3D.drawPoint(context3D.transformPoint(y), 3, Color.BLUE);
-//        context3D.drawPoint(context3D.transformPoint(z), 3, Color.GREEN);
+//        context3D.drawPoint(context3D.transformPoint(testX), 3, Color.RED);
+//        context3D.drawPoint(context3D.transformPoint(testY), 3, Color.BLUE);
+//        context3D.drawPoint(context3D.transformPoint(testZ), 3, Color.GREEN);
     }
 
     public void setzStart(double zStart) {
@@ -99,5 +103,9 @@ public class Main extends Application {
 
     public void setDrawNormals(boolean drawNormals) {
         this.drawNormals = drawNormals;
+    }
+
+    public void setLightsRangeAndPower(double range, double power) {
+        context3D.setupLights(range, power);
     }
 }

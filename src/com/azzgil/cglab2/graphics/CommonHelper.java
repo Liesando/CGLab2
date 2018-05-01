@@ -15,6 +15,10 @@ public class CommonHelper {
         return value;
     }
 
+    public static int clamp255(double value) {
+        return (int) clamp(value, 0, 255);
+    }
+
     public static Vector3d vector3d(Tuple4d v) {
         return new Vector3d(v.x, v.y, v.z);
     }
@@ -49,8 +53,29 @@ public class CommonHelper {
 
     public static Color mul(Color c1, double factor) {
         factor = Math.max(0, factor);
-        return Color.rgb((int) (c1.getRed() * factor * 255),
+        Color result = Color.rgb((int) (c1.getRed() * factor * 255),
                 (int) (c1.getGreen() * factor * 255),
                 (int) (c1.getBlue() * factor * 255));
+        return clampColor(result);
+    }
+
+    public static Color add(Color c1, Color c2) {
+        Color result = Color.rgb((int) ((c1.getRed() + c2.getRed()) * 255),
+                (int) ((c1.getGreen() + c2.getBlue()) * 255),
+                (int) ((c1.getBlue() + c2.getGreen()) * 255));
+        return clampColor(result);
+    }
+
+    private static Color clampColor(Color c) {
+        return Color.rgb(clamp255(c.getRed() * 255),
+                clamp255(c.getGreen() * 255),
+                clamp255(c.getBlue() * 255));
+    }
+
+    public static double distance(Tuple4d p1, Tuple4d p2) {
+        Vector4d result = new Vector4d();
+        result.sub(p2, p1);
+        result.w = 0;
+        return result.length();
     }
 }
