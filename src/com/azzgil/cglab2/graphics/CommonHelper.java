@@ -1,5 +1,7 @@
 package com.azzgil.cglab2.graphics;
 
+import javafx.scene.paint.Color;
+
 import javax.vecmath.Tuple3d;
 import javax.vecmath.Tuple4d;
 import javax.vecmath.Vector3d;
@@ -22,8 +24,9 @@ public class CommonHelper {
     }
 
     public static Vector4d makeVectorNormalized(Tuple4d start, Tuple4d end) {
-        Vector4d result = new Vector4d(start.x - end.x, start.y - end.y, start.z - end.z, 1);
-        result.normalize();
+        Vector3d t = new Vector3d(end.x - start.x, end.y - start.y, end.z - start.z);
+        t.normalize();
+        Vector4d result = new Vector4d(t.x, t.y, t.z, 1);
         return result;
     }
 
@@ -34,7 +37,20 @@ public class CommonHelper {
         return CommonHelper.vector4d(_cross);
     }
 
-//    public static Vector4d sub(Tuple4d one, Tuple4d second) {
-//        return new Vector4d(one.x - second.x, one.y - second.y, one.z - second.z, 1);
-//    }
+    public static double dot(Vector4d v1, Vector4d v2) {
+        return vector3d(v1).dot(vector3d(v2));
+    }
+
+    public static Color mul(Color c1, Color c2) {
+        return Color.rgb((int) (c1.getRed() * c2.getRed() * 255),
+                (int) (c1.getGreen() * c2.getGreen() * 255),
+                (int) (c1.getBlue() * c2.getBlue() * 255));
+    }
+
+    public static Color mul(Color c1, double factor) {
+        factor = Math.max(0, factor);
+        return Color.rgb((int) (c1.getRed() * factor * 255),
+                (int) (c1.getGreen() * factor * 255),
+                (int) (c1.getBlue() * factor * 255));
+    }
 }

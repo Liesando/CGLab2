@@ -19,6 +19,7 @@ public class Main extends Application {
     private double xStart;
     private double xEnd;
     private double xStep;
+    private boolean drawNormals;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -63,8 +64,8 @@ public class Main extends Application {
         context3D.drawLine(center, oY, Color.BLUE);
         context3D.drawLine(center, oZ, Color.GREEN);
 
-        context3D.drawFunction((x,z) -> Math.sin(x) * 3.0 + z + 1,
-                zStart, zEnd, zStep, xStart, xEnd, xStep, Color.WHITE);
+        context3D.drawFunction((x,z) -> Math.sin(x),
+                zStart, zEnd, zStep, xStart, xEnd, xStep, Color.WHITE, drawNormals);
 
 //        context3D.drawPoint(context3D.transformPoint(center), 3, Color.WHITE);
 //        context3D.drawPoint(context3D.transformPoint(x), 3, Color.RED);
@@ -94,5 +95,9 @@ public class Main extends Application {
 
     public void setxStep(double xStep) {
         this.xStep = xStep;
+    }
+
+    public void setDrawNormals(boolean drawNormals) {
+        this.drawNormals = drawNormals;
     }
 }

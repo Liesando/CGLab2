@@ -1,6 +1,7 @@
 package com.azzgil.cglab2;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 
 public class MainController {
@@ -9,6 +10,7 @@ public class MainController {
     private double delta = 3f;
     @FXML private TextField zPlaneTf;
     @FXML private TextField xPlaneTf;
+    @FXML private CheckBox drawNormalsCb;
 
     @FXML
     private void onLeftClick() {
@@ -46,6 +48,8 @@ public class MainController {
             mainApp.setxStart(Double.parseDouble(parsed[0]));
             mainApp.setxEnd(Double.parseDouble(parsed[1]));
             mainApp.setxStep(Double.parseDouble(parsed[2]));
+
+            mainApp.setDrawNormals(drawNormalsCb.isSelected());
 
             mainApp.redraw();
         } catch (NumberFormatException | IndexOutOfBoundsException e) { }

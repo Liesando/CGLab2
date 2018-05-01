@@ -4,6 +4,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
 import javax.vecmath.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.ToDoubleBiFunction;
 
 public class Context3D {
@@ -24,7 +26,7 @@ public class Context3D {
                 .identity()
                 .translate(0, 0, -1)
                 .build();
-        projection = Math3DHelper.projectionMatrix(5);
+        projection = Math3DHelper.projectionMatrix(10);
 
         computePVW();
     }
@@ -102,38 +104,85 @@ public class Context3D {
     public void drawFunction(ToDoubleBiFunction<Double, Double> f,
                              double zStart, double zEnd, double zStep,
                              double xStart, double xEnd, double xStep,
-                             Color color) {
+                             Color color, boolean drawNormals) {
+        Vector4d toLight = new Vector4d(0, 1, 0, 0);
+        Color lightColor = Color.WHITE;
         double z = zStart;
         while (z <= zEnd) {
             double x = xStart;
             while (x <= xEnd) {
-                Point4d point = new Point4d(x, f.applyAsDouble(x, z), z, 1);
-                renderPoint(point, color);
 
-                double nextZ = z + zStep <= zEnd ? z + zStep : z - zStep;
+                // get the point
+                Point4d point = new Point4d(x, f.applyAsDouble(x, z), z, 1);
+
+                // get the normal
+                boolean reverseCross = false;
+                double nextZ;
+                double nextX;
+
+                if (z + zStep > zEnd) {
+                    nextZ = z - zStep;
+                    reverseCross = true;
+                } else {
+                    nextZ = z + zStep;
+                }
                 Vector4d nextZPlane = new Vector4d(x, f.applyAsDouble(x, nextZ), nextZ, 1);
 
-                drawLine(point, nextZPlane, Color.BLUE);
-
-                double nextX = x + xStep <= xEnd ? x + xStep : x - xStep;
+                if (x + xStep > xEnd) {
+                    nextX = x - xStep;
+                    reverseCross = !reverseCross;
+                } else {
+                    nextX = x + xStep;
+                }
                 Vector4d nextXPlane = new Vector4d(nextX, f.applyAsDouble(nextX, z), z, 1);
+                Vector4d nextZXPlane = new Vector4d(nextX, f.applyAsDouble(nextX, nextZ), nextZ, 1);
 
-                drawLine(point, nextXPlane, Color.DEEPPINK);
+                // construct triangle
+                Tuple2d p1 = transformPoint(point);
+                Tuple2d p2 = transformPoint(nextZPlane);
+                Tuple2d p3 = transformPoint(nextXPlane);
+                Tuple2d p4 = transformPoint(nextZXPlane);
+                List<Tuple2d> firstTriangle = new ArrayList<>();
+                firstTriangle.add(p1);
+                firstTriangle.add(p2);
+                firstTriangle.add(p3);
+                List<Tuple2d> secondTriangle = new ArrayList<>();
+                secondTriangle.add(p2);
+                secondTriangle.add(p3);
+                secondTriangle.add(p4);
 
-                nextZPlane = CommonHelper.makeVectorNormalized(point, nextZPlane);
-                nextXPlane = CommonHelper.makeVectorNormalized(point, nextXPlane);
-//                nextZPlane.sub(point);
-//                nextXPlane.sub(point);
-//                nextZPlane.normalize();
-//                nextXPlane.normalize();
+                Vector4d toZPlane = CommonHelper.makeVectorNormalized(point, nextZPlane);
+                Vector4d toXPlane = CommonHelper.makeVectorNormalized(point, nextXPlane);
 
-//                nextXPlane = CommonHelper.sub(nextXPlane, point);
-//                nextZPlane = CommonHelper.sub(nextZPlane, point);
-                Vector4d cross = CommonHelper.crossNormalized(nextXPlane, nextZPlane);
-                cross.add(point);
-                cross.w = 1;
+                Vector4d firstCross, secondCross;
+                if (!reverseCross) {
+                    firstCross = CommonHelper.crossNormalized(toZPlane, toXPlane);
+                    toZPlane = CommonHelper.makeVectorNormalized(nextZXPlane, nextZPlane);
+                    toXPlane = CommonHelper.makeVectorNormalized(nextZXPlane, nextXPlane);
+                    secondCross = CommonHelper.crossNormalized(toXPlane, toZPlane);
+                } else {
+                    firstCross = CommonHelper.crossNormalized(toXPlane, toZPlane);
+                    toZPlane = CommonHelper.makeVectorNormalized(nextZXPlane, nextZPlane);
+                    toXPlane = CommonHelper.makeVectorNormalized(nextZXPlane, nextXPlane);
+                    secondCross = CommonHelper.crossNormalized(toZPlane, toXPlane);
+                }
 
-                drawLine(point, cross, Color.YELLOW);
+                // draw 1st filled triangle
+                Color resultColor = CommonHelper.mul(color, lightColor);
+                resultColor = CommonHelper.mul(resultColor, CommonHelper.dot(firstCross, toLight));
+                drawer.fillPolygon(firstTriangle, resultColor);
+
+                // draw 2d filled triangle
+                resultColor = CommonHelper.mul(color, lightColor);
+                resultColor = CommonHelper.mul(resultColor, CommonHelper.dot(secondCross, toLight));
+                drawer.fillPolygon(secondTriangle, resultColor);
+
+                // draw normal
+                if (drawNormals) {
+                    firstCross.add(point);
+                    firstCross.w = 1;
+                    drawLine(point, firstCross, Color.YELLOW);
+                }
 
                 x += xStep;
             }

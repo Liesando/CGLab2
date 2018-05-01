@@ -58,7 +58,7 @@ public class Drawer {
         graphicsContext.strokePolygon(xs, ys, points.size());
     }
 
-    private void fillPolygon(List<? extends Tuple2d> points, Color color) {
+    public void fillPolygon(List<? extends Tuple2d> points, Color color) {
         double[] xs = points.stream().mapToDouble(p -> p.getX()).toArray();
         double[] ys = points.stream().mapToDouble(p -> p.getY()).toArray();
         graphicsContext.setFill(color);
